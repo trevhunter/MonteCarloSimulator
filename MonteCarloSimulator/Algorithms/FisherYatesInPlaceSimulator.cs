@@ -13,9 +13,11 @@ namespace MonteCarloSimulator.Algorithms
 
         protected override void SimulateMonteCarlo(Clip[] sourceClips, CancellationToken cancelToken)
         {
-            // Copy the array as we'll shuffle it
-            int[] indicies = Enumerable.Range(0, sourceClips.Length).ToArray();
-            int maxRand = sourceClips.Length - 1;
+            // Use an a array of indicies so we don't need to shuffle the actual clips
+            // Also make a copy of the clips so processors don't need to share cache (don't know if this is a thing or not)
+            Clip[] localClips = (Clip[])sourceClips.Clone();
+            int[] indicies = Enumerable.Range(0, localClips.Length).ToArray();
+            int maxIndex = localClips.Length - 1;
 
             while (!cancelToken.IsCancellationRequested)
             {
@@ -25,11 +27,15 @@ namespace MonteCarloSimulator.Algorithms
                 bool isCollision = false;
 
                 // Get a next random clip, then check to see if it clashes with previous clip
-                for (int i = 0; i < sourceClips.Length; i++)
+                for (int i = 0; i <= maxIndex; i++)
                 {
-                    if (i < maxRand)
+                    if (i < maxIndex)
                     {
-                        swapIndex = _rnd.Next(i + 1, maxRand);
+                        // only swap things above the current position into the current position
+                        // because if we swapped things lower than the current position, we'd
+                        // invalidate the checks that determine if the previous clips have a 
+                        // collision.
+                        swapIndex = _rnd.Next(i + 1, maxIndex); 
                         int temp = indicies[i];
                         indicies[i] = indicies[swapIndex];
                         indicies[swapIndex] = temp;
@@ -37,7 +43,7 @@ namespace MonteCarloSimulator.Algorithms
 
                     if (i > 0)
                     {
-                        if (sourceClips[indicies[i]].HasCommonPrincipal(sourceClips[indicies[i - 1]]))
+                        if (localClips[indicies[i]].HasCommonPrincipal(localClips[indicies[i - 1]]))
                         {
                             isCollision = true;
                             break;
