@@ -14,6 +14,14 @@ namespace MonteCarloSimulator
     {
         private readonly string _sourceFile;
 
+        public string SourceFile
+        {
+            get
+            {
+                return _sourceFile;
+            }
+        }
+
         public SportsClipCsvReader(string dataFile)
         {
             if (!File.Exists(dataFile))

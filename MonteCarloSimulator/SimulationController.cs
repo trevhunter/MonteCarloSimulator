@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,11 +29,14 @@ namespace MonteCarloSimulator
                 throw new ArgumentOutOfRangeException("Maximum time must be between 1 second and 1 hour.");
             }
 
+            WriteHeader(maxDuration, _dataReader.SourceFile);
+
             // Get the data to act on
             Clip[] sourceClips = _dataReader.ReadClips();
 
             // Set up an instance per processor to run
             var simulators = new List<Tuple<Algorithms.MonteCarloBase, Task<Algorithms.SimulationResult>>>(Environment.ProcessorCount);
+            DateTime startTime = DateTime.UtcNow;
 
             for (int i = 0; i < Environment.ProcessorCount; i++)
             {
@@ -41,21 +45,87 @@ namespace MonteCarloSimulator
                 simulators.Add(new Tuple<Algorithms.MonteCarloBase, Task<Algorithms.SimulationResult>>(simulator, task));
             }
 
-            Thread.Sleep(maxDuration);
+            // add observers for every second
+            using (var observer = new SimulationObserver(simulators.Select(i => i.Item1).ToList(), _outputStream, startTime))
+            {
+                observer.StartObserving();
+                Thread.Sleep(maxDuration); // Wait for things to stop
+            }
 
-            Algorithms.SimulationResult overallResult = new Algorithms.SimulationResult(0, 0);
+            List<Algorithms.SimulationResult> results = new List<Algorithms.SimulationResult>();
             foreach (var simulator in simulators)
             {
                 simulator.Item1.StopSimulation();
-                var result = simulator.Item2.Result;
+                results.Add(simulator.Item2.Result);
+            }
+
+            WriteResult(results, (DateTime.UtcNow - startTime), _outputStream);
+        }
+
+        private void WriteHeader(TimeSpan maxDuration, string sourceFile)
+        {
+            _outputStream.WriteLine($"Beginning Monty Carlo Simulation for a maximum of {maxDuration.TotalSeconds} seconds using {Environment.ProcessorCount} processors.");
+        }
+
+        private static void WriteResult(List<Algorithms.SimulationResult> results, TimeSpan durationSinceStart, TextWriter outputStream)
+        {
+            Algorithms.SimulationResult overallResult = new Algorithms.SimulationResult(0, 0);
+            foreach (var result in results)
+            {
                 overallResult += result;
             }
 
-            _outputStream.WriteLine($"iterations = {overallResult.TotalSimulations:n0}; goodLists = {(overallResult.TotalSimulations - overallResult.TotalCollisions):n0}; collision probability ={((float)overallResult.TotalCollisions / (float)overallResult.TotalSimulations):P5}; iteration/sec = {(overallResult.TotalSimulations / maxDuration.TotalSeconds):n0}");
-
+            outputStream.WriteLine(
+                $"iterations={overallResult.TotalSimulations:n0}; goodLists={(overallResult.TotalSimulations - overallResult.TotalCollisions):n0}; collision probability={(overallResult.CollisionProbability):P5}; iteration/sec={(overallResult.TotalSimulations / durationSinceStart.TotalSeconds):n0}; total time={durationSinceStart.TotalSeconds:n}s");
         }
 
+        private class SimulationObserver : IDisposable
+        {
 
+            private readonly System.Timers.Timer _timer;
+            private bool _isDisposed = false;
+            private IList<Algorithms.MonteCarloBase> _simulators;
+            private TextWriter _outputStream;
+            private DateTime _dateStartedUtc;
+
+            public SimulationObserver(IList<Algorithms.MonteCarloBase> observedSimulators, TextWriter outputStream, DateTime dateStartedUtc)
+            {
+                _simulators = observedSimulators;
+                _outputStream = outputStream;
+                _dateStartedUtc = dateStartedUtc;
+                _timer = new System.Timers.Timer(1000);
+                _timer.Elapsed += ElapsedHander;
+            }
+
+            public void StartObserving()
+            {
+                _timer.Start();
+            }
+
+            private void ElapsedHander(object sender, System.Timers.ElapsedEventArgs e)
+            {
+                if (!_isDisposed)
+                {
+                    WriteCurrentState();
+                }
+            }
+
+            private void WriteCurrentState()
+            {
+                var currentResults = from simulator in _simulators
+                                     select simulator.CurrentResult;
+
+                SimulationController.WriteResult(currentResults.ToList(), (DateTime.UtcNow - _dateStartedUtc), _outputStream);
+
+            }
+
+            public void Dispose()
+            {
+                _isDisposed = true;
+                _timer.Stop();
+                _timer.Dispose();
+            }
+        }
 
     }
 }
