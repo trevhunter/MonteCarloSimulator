@@ -31,13 +31,30 @@ namespace MonteCarloSimulator
             // Get the data to act on
             Clip[] sourceClips = _dataReader.ReadClips();
 
+            if(0 == sourceClips.Length)
+            {
+                throw new Exception("No data to read.");
+            }
+
+            // Determine if we can use a specialized or generic algorithm based on the bit size of 
+            // all principals in the clips.
+            Func<Algorithms.MonteCarloBase> factory;
+            if (sourceClips[0].PrincipalBits.Length==3)
+            {
+                factory = () =>  new Algorithms.FisherYatesFastCompareSimulator(); 
+            }
+            else
+            {
+                factory = () => new Algorithms.FisherYatesInPlaceSimulator();
+            }
+
             // Set up an instance per processor to run
             var simulators = new List<Tuple<Algorithms.MonteCarloBase, Task<Algorithms.SimulationResult>>>(Environment.ProcessorCount);
             DateTime startTime = DateTime.UtcNow;
 
             for (int i = 0; i < Environment.ProcessorCount; i++)
             {
-                var simulator = new Algorithms.FisherYatesInPlaceSimulator();
+                var simulator = factory();
                 var task = simulator.StartSimulationAsync(sourceClips);
                 simulators.Add(new Tuple<Algorithms.MonteCarloBase, Task<Algorithms.SimulationResult>>(simulator, task));
             }

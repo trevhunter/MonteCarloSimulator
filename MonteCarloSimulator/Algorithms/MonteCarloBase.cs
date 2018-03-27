@@ -46,8 +46,7 @@ namespace MonteCarloSimulator.Algorithms
             _cancelTokenSource.Token.WaitHandle.WaitOne();
             _cancelTokenSource = null;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public void RecordSimulationResult(bool wasCollision)
         {
             _result.TotalSimulations++;

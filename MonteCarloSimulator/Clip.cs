@@ -16,10 +16,12 @@ namespace MonteCarloSimulator
 
         public int[] Principals;
 
+        public Int64[] PrincipalBits;
+
+       
         /// <summary>
         /// Checks to see if this clip has a principal in common with another principal
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasCommonPrincipal(Clip otherClip)
         {
             if(this.Principals.Length == 1 && otherClip.Principals.Length == 1)
@@ -39,5 +41,8 @@ namespace MonteCarloSimulator
             }
             return false;
         }
+
+
+       
     }
 }

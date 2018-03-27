@@ -11,10 +11,10 @@ namespace MonteCarloSimulator.Algorithms
     /// </summary>
     public struct SimulationResult
     {
-        public int TotalSimulations;
-        public int TotalCollisions;
+        public ulong TotalSimulations;
+        public ulong TotalCollisions;
 
-        internal SimulationResult(int totalSimulations, int totalCollisions)
+        internal SimulationResult(ulong totalSimulations, ulong totalCollisions)
         {
             this.TotalSimulations = totalSimulations;
             this.TotalCollisions = totalCollisions;
@@ -27,11 +27,11 @@ namespace MonteCarloSimulator.Algorithms
             return new SimulationResult(item1.TotalSimulations + item2.TotalSimulations, item1.TotalCollisions + item2.TotalCollisions);
         }
 
-        public double CollisionProbability
+        public decimal CollisionProbability
         {
             get
             {
-                return (double)TotalCollisions / (double)TotalSimulations;
+                return (decimal)TotalCollisions / (decimal)TotalSimulations;
             }
         }
     }

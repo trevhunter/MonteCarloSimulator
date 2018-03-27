@@ -11,12 +11,18 @@ namespace MonteCarloSimulator
     {
         static void Main(string[] args)
         {
+            try
+            { 
             var cmdArgs = Args.Configuration.Configure<CmdArgs>().CreateAndBind(args);
 
             // Set up the simulation controller
             var controller = new SimulationController(cmdArgs.DataFilePath, Console.Out);
             controller.Run(TimeSpan.FromSeconds(cmdArgs.MaxTime));
-
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
             // Prompt to exit
             Console.WriteLine("Press return to exit...");
             Console.ReadLine();
