@@ -12,9 +12,9 @@ namespace MonteCarloSimulator
     /// </summary>
     public struct Clip
     {
-        public int Id { get; set; }
+        public int Id;
 
-        public int[] Principals { get; set; }
+        public int[] Principals;
 
         /// <summary>
         /// Checks to see if this clip has a principal in common with another principal
@@ -22,6 +22,11 @@ namespace MonteCarloSimulator
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasCommonPrincipal(Clip otherClip)
         {
+            if(this.Principals.Length == 1 && otherClip.Principals.Length == 1)
+            {
+                return this.Principals[0] == otherClip.Principals[0];
+            }
+
             for (int i = 0; i < this.Principals.Length; i++)
             {
                 for (int j = 0; j < otherClip.Principals.Length; j++)
