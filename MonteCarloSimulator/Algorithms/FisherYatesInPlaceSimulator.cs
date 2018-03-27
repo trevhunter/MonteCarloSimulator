@@ -7,30 +7,24 @@ using System.Threading.Tasks;
 
 namespace MonteCarloSimulator.Algorithms
 {
-    /// <summary>
-    /// Simulates monte carlo algorithm using 
-    /// a linq query over the list of clips to achieve randomness
-    /// </summary>
     public class FisherYatesInPlaceSimulator : MonteCarloBase
     {
         private readonly Random _rnd = new Random();
 
         protected override void SimulateMonteCarlo(Clip[] sourceClips, CancellationToken cancelToken)
         {
-
             // Copy the array as we'll shuffle it
             int[] indicies = Enumerable.Range(0, sourceClips.Length).ToArray();
             int maxRand = sourceClips.Length - 1;
 
             while (!cancelToken.IsCancellationRequested)
             {
-
-                // Fisher-Yates shuffle, with a random indexer rather than 
+                // Fisher-Yates -like shuffle, with a random indexer rather than 
                 // actually moving the items around
                 int swapIndex = 0;
                 bool isCollision = false;
 
-                // Fisher-Yates shuffle
+                // Get a next random clip, then check to see if it clashes with previous clip
                 for (int i = 0; i < sourceClips.Length; i++)
                 {
                     if (i < maxRand)
@@ -48,7 +42,6 @@ namespace MonteCarloSimulator.Algorithms
                             isCollision = true;
                             break;
                         }
-
                     }
                 }
                 RecordSimulationResult(isCollision);

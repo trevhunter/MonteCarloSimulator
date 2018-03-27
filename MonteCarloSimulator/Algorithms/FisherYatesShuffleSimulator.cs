@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 
 namespace MonteCarloSimulator.Algorithms
 {
-    /// <summary>
-    /// Simulates monte carlo algorithm using 
-    /// a linq query over the list of clips to achieve randomness
-    /// </summary>
     public class FisherYatesShuffleSimulator : MonteCarloBase
     {
         private readonly Random _rnd = new Random();

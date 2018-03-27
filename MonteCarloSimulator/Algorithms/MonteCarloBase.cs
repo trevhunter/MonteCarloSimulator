@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MonteCarloSimulator.Algorithms
 {
-    /// <summary>
-    /// Provides a
-    /// </summary>
     public abstract class MonteCarloBase
     {
         private System.Threading.CancellationTokenSource _cancelTokenSource;
@@ -49,6 +47,7 @@ namespace MonteCarloSimulator.Algorithms
             _cancelTokenSource = null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RecordSimulationResult(bool wasCollision)
         {
             _result.TotalSimulations++;

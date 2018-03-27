@@ -9,17 +9,14 @@ namespace MonteCarloSimulator
 {
     internal class SimulationController
     {
-
         private readonly TextWriter _outputStream;
         private readonly SportsClipCsvReader _dataReader;
-
 
         public SimulationController(string dataFile, TextWriter outputStream)
         {
             _outputStream = outputStream;
             _dataReader = new SportsClipCsvReader(dataFile);
         }
-
 
         public void Run(TimeSpan maxDuration)
         {
