@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\FisherYatesFastCompareFastRandomSimulator.cs" />
     <Compile Include="Algorithms\FisherYatesFastCompareSimulator.cs" />
     <Compile Include="Algorithms\FisherYatesInPlaceSimulator.cs" />
     <Compile Include="Algorithms\FisherYatesShuffleSimulator.cs" />

@@ -41,7 +41,7 @@ namespace MonteCarloSimulator
             Func<Algorithms.MonteCarloBase> factory;
             if (sourceClips[0].PrincipalBits.Length==3)
             {
-                factory = () =>  new Algorithms.FisherYatesFastCompareSimulator(); 
+                factory = () =>  new Algorithms.FisherYatesFastCompareFastRandomSimulator(); 
             }
             else
             {
